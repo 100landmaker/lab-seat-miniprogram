@@ -23,7 +23,33 @@ Page({
   },
 
   onShow() {
-    if (this.data.user) this.refresh();
+    if (!this.data.user) return;
+    this.refresh();
+    this.checkSubscriptions();
+  },
+
+  // 订阅的座位被释放后，在小程序内提醒
+  checkSubscriptions() {
+    db.consumeReadySubscriptions(this.data.user.id)
+      .then(list => {
+        if (!list.length) return;
+
+        const first = list[0];
+        const more = list.length > 1 ? `，另有 ${list.length - 1} 个座位也已释放` : '';
+
+        wx.showModal({
+          title: '订阅座位已释放',
+          content: `${first.date} ${first.start}-${first.end} ${first.seatCode} 已被释放${more}。`,
+          confirmText: '去预约',
+          cancelText: '稍后',
+          success: res => {
+            if (res.confirm) {
+              wx.navigateTo({ url: '/pages/reserve/reserve' });
+            }
+          }
+        });
+      })
+      .catch(() => {});
   },
 
   onPullDownRefresh() {
@@ -201,6 +227,10 @@ Page({
 
   goAssistant() {
     wx.navigateTo({ url: '/pages/assistant/assistant' });
+  },
+
+  goSubscriptions() {
+    wx.navigateTo({ url: '/pages/subscribe/subscribe' });
   },
 
   logout() {

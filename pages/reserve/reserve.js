@@ -79,6 +79,7 @@ Page({
 
         const seats = roomRes.room.seats.map(seat => {
           const booked = board.bookings[seat.code];
+          const sub = board.subs ? board.subs[seat.code] : null;
           let state = 'free';
           let tagText = '';
           let bookingName = '';
@@ -100,6 +101,8 @@ Page({
             state,
             tagText,
             bookingName,
+            subscribed: !!sub,
+            subState: sub ? sub.state : '',
             short: seat.no < 10 ? '0' + seat.no : '' + seat.no
           });
         });
@@ -177,6 +180,28 @@ Page({
             wx.hideLoading();
             wx.showToast({ title: err.message || '预约失败', icon: 'none' });
           });
+      }
+    });
+  },
+
+  subscribeSeat() {
+    const { detail, user, date, slot } = this.data;
+    if (!detail || detail.state !== 'booked' || detail.subscribed) return;
+
+    wx.showModal({
+      title: '订阅座位',
+      content: `${date} ${slot}-${this.data.slotEnd} ${detail.code} 有人退订时，会在小程序内提醒你。`,
+      confirmText: '订阅',
+      success: res => {
+        if (!res.confirm) return;
+
+        db.createSubscription(user, detail.code, date, slot)
+          .then(() => {
+            this.setData({ showDetail: false });
+            wx.showToast({ title: '订阅成功', icon: 'success' });
+            this.load();
+          })
+          .catch(err => wx.showToast({ title: err.message || '订阅失败', icon: 'none' }));
       }
     });
   },

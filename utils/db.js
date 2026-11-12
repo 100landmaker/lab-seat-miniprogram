@@ -497,11 +497,15 @@ function decorateReservation(r) {
   });
 }
 
-// 预约面板：某时段全部预约 + 我的预约
+// 预约面板：某时段全部预约 + 我的预约 + 我的订阅
 function getSlotBoard(userId, date, start) {
   return run(() => {
     const bookings = getSeatBookings(date, start);
-    return { bookings, mine: getMyReservation(userId, date, start) };
+    return {
+      bookings,
+      mine: getMyReservation(userId, date, start),
+      subs: getSlotSubscriptions(userId, date, start)
+    };
   });
 }
 
@@ -562,6 +566,7 @@ function cancelReservation(id, userId, isTeacher) {
     item.status = 'cancelled';
     item.cancelTime = timeNow();
     saveReservations(list);
+    releaseSubscriptions(item.seatCode, item.date, item.start);
     return item;
   });
 }
@@ -601,6 +606,189 @@ function getReservationsByDate(date) {
   });
 }
 
+/* ---------------- 站内订阅 ---------------- */
+
+const SUB_KEY = 'lab_subscriptions_v1';
+
+function getSubscriptionsRaw() {
+  return wx.getStorageSync(SUB_KEY) || [];
+}
+
+function saveSubscriptions(list) {
+  wx.setStorageSync(SUB_KEY, list);
+}
+
+function decorateSubscription(sub) {
+  const startAt = toTime(sub.date, sub.start).getTime();
+  const endAt = toTime(sub.date, sub.end).getTime();
+  const now = Date.now();
+
+  let state = sub.status;
+  let stateText = '等待释放';
+
+  if (sub.status === 'cancelled') {
+    state = 'cancelled';
+    stateText = '已取消';
+  } else if (sub.status === 'ready') {
+    if (now > endAt) {
+      state = 'expired';
+      stateText = '已失效';
+    } else {
+      state = 'ready';
+      stateText = '已释放';
+    }
+  } else if (sub.status === 'waiting' && now >= startAt) {
+    state = 'expired';
+    stateText = '已失效';
+  }
+
+  return Object.assign({}, sub, { state, stateText });
+}
+
+// 某个座位当前时段我的订阅（用于预约页展示）
+function getSlotSubscriptions(userId, date, start) {
+  const map = {};
+  getSubscriptionsRaw().forEach(sub => {
+    if (
+      sub.userId === userId &&
+      sub.date === date &&
+      sub.start === start &&
+      (sub.status === 'waiting' || sub.status === 'ready')
+    ) {
+      map[sub.seatCode] = decorateSubscription(sub);
+    }
+  });
+  return map;
+}
+
+// 预约被取消时，唤醒订阅该座位的同学
+function releaseSubscriptions(seatCode, date, start) {
+  const list = getSubscriptionsRaw();
+  let changed = false;
+
+  list.forEach(sub => {
+    if (
+      sub.seatCode === seatCode &&
+      sub.date === date &&
+      sub.start === start &&
+      sub.status === 'waiting'
+    ) {
+      sub.status = 'ready';
+      sub.readyAt = timeNow();
+      sub.notified = false;
+      changed = true;
+    }
+  });
+
+  if (changed) saveSubscriptions(list);
+}
+
+function createSubscription(user, seatCode, date, start) {
+  return run(() => {
+    const dates = getDateOptions();
+    if (!dates.some(d => d.date === date)) throw new Error('只能订阅未来 7 天内的时段');
+
+    const slot = getSlots().find(s => s.start === start);
+    if (!slot) throw new Error('该时段不存在');
+
+    if (toTime(date, start).getTime() <= Date.now()) {
+      throw new Error('该时段已开始，无法订阅');
+    }
+
+    const data = getDB();
+    const seat = data.room.seats.find(s => s.code === seatCode);
+    if (!seat) throw new Error('座位不存在');
+    if (seat.status === 'broken') throw new Error('该座位电脑故障，无需订阅');
+
+    const reservation = getReservationsRaw().find(r =>
+      r.seatCode === seatCode && r.date === date && r.start === start && r.status === 'booked'
+    );
+    if (!reservation) throw new Error('该座位当前可预约，无需订阅');
+    if (reservation.userId === user.id) throw new Error('这是你自己的预约');
+
+    const list = getSubscriptionsRaw();
+    const exists = list.find(s =>
+      s.userId === user.id &&
+      s.seatCode === seatCode &&
+      s.date === date &&
+      s.start === start &&
+      (s.status === 'waiting' || s.status === 'ready')
+    );
+    if (exists) throw new Error('你已经订阅过这个座位');
+
+    const record = {
+      id: 's-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      userId: user.id,
+      name: user.name,
+      seatCode: seat.code,
+      date,
+      start: slot.start,
+      end: slot.end,
+      status: 'waiting',
+      notified: false,
+      createdAt: timeNow()
+    };
+    list.unshift(record);
+    saveSubscriptions(list);
+    return decorateSubscription(record);
+  });
+}
+
+function cancelSubscription(id, userId) {
+  return run(() => {
+    const list = getSubscriptionsRaw();
+    const sub = list.find(s => s.id === id);
+    if (!sub) throw new Error('订阅不存在');
+    if (sub.userId !== userId) throw new Error('只能取消自己的订阅');
+    if (sub.status !== 'waiting' && sub.status !== 'ready') throw new Error('该订阅已结束');
+
+    sub.status = 'cancelled';
+    sub.cancelTime = timeNow();
+    saveSubscriptions(list);
+    return true;
+  });
+}
+
+// 我的订阅：订阅中 / 历史
+function getMySubscriptions(userId) {
+  return run(() => {
+    const all = getSubscriptionsRaw()
+      .filter(s => s.userId === userId)
+      .map(decorateSubscription);
+
+    const active = all
+      .filter(s => s.state === 'waiting' || s.state === 'ready')
+      .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+
+    const history = all
+      .filter(s => s.state === 'expired' || s.state === 'cancelled')
+      .sort((a, b) => (b.date + b.start).localeCompare(a.date + a.start));
+
+    return { active, history };
+  });
+}
+
+// 取走「已释放但还没提醒过」的订阅，并标记已提醒
+function consumeReadySubscriptions(userId) {
+  return run(() => {
+    const list = getSubscriptionsRaw();
+
+    const ready = list
+      .filter(s => s.userId === userId && s.status === 'ready' && !s.notified)
+      .map(decorateSubscription)
+      .filter(s => s.state === 'ready');
+
+    if (ready.length) {
+      list.forEach(s => {
+        if (s.userId === userId && s.status === 'ready') s.notified = true;
+      });
+      saveSubscriptions(list);
+    }
+
+    return ready;
+  });
+}
+
 module.exports = {
   init,
   login,
@@ -625,5 +813,9 @@ module.exports = {
   createReservation,
   cancelReservation,
   getMyReservations,
-  getReservationsByDate
+  getReservationsByDate,
+  createSubscription,
+  cancelSubscription,
+  getMySubscriptions,
+  consumeReadySubscriptions
 };

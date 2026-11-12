@@ -5,6 +5,7 @@
     "pages/teacher/teacher",
     "pages/reserve/reserve",
     "pages/mybook/mybook",
+    "pages/subscribe/subscribe",
     "pages/assistant/assistant"
   ],
   "window": {

@@ -44,6 +44,10 @@
       <view class="q-title">智能问答</view>
       <view class="q-sub">有问题问助手</view>
     </view>
+    <view class="quick-item q-orange" bindtap="goSubscriptions">
+      <view class="q-title">我的订阅</view>
+      <view class="q-sub">空位提醒</view>
+    </view>
   </view>
 
   <!-- 签到门禁：未签到不允许选座 -->

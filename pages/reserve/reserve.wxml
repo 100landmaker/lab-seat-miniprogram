@@ -117,7 +117,10 @@
 
       <button class="sheet-btn primary" wx:if="{{detail.state === 'free'}}" bindtap="reserve">预约这个座位</button>
       <button class="sheet-btn danger" wx:if="{{detail.state === 'mine'}}" bindtap="cancelMine">取消这个预约</button>
-      <button class="sheet-btn ghost" wx:if="{{detail.state === 'booked'}}">该时段已被预约</button>
+      <block wx:if="{{detail.state === 'booked'}}">
+        <button class="sheet-btn primary" wx:if="{{!detail.subscribed}}" bindtap="subscribeSeat">有空位时提醒我</button>
+        <button class="sheet-btn ghost" wx:else>已订阅，释放后提醒</button>
+      </block>
       <button class="sheet-btn ghost" wx:if="{{detail.state === 'broken'}}">电脑故障，暂不可预约</button>
       <button class="sheet-btn text" bindtap="closeSheet">关闭</button>
     </block>

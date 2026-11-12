@@ -86,9 +86,9 @@
 
 .quick-item {
   flex: 1;
-  padding: 24rpx 20rpx;
-  margin-right: 16rpx;
-  border-radius: 22rpx;
+  padding: 22rpx 14rpx;
+  margin-right: 12rpx;
+  border-radius: 20rpx;
   color: #FFFFFF;
   box-shadow: 0 10rpx 24rpx rgba(23, 43, 77, 0.12);
 }
@@ -109,14 +109,18 @@
   background: linear-gradient(140deg, #4C1D95, #7C3AED);
 }
 
+.q-orange {
+  background: linear-gradient(140deg, #B45309, #F59E0B);
+}
+
 .q-title {
-  font-size: 28rpx;
+  font-size: 24rpx;
   font-weight: 600;
 }
 
 .q-sub {
   margin-top: 6rpx;
-  font-size: 18rpx;
+  font-size: 17rpx;
   opacity: 0.82;
 }
 

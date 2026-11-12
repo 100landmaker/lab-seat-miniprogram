@@ -1,0 +1,48 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero-eyebrow">学生端 · {{user.name}}</view>
+    <view class="hero-title">我的订阅</view>
+    <view class="hero-sub">订阅的座位被释放后，会在小程序内提醒你</view>
+    <view class="hero-link" bindtap="goReserve">去预约</view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{tab === 'active' ? 'active' : ''}}" data-tab="active" bindtap="switchTab">订阅中</view>
+    <view class="tab {{tab === 'history' ? 'active' : ''}}" data-tab="history" bindtap="switchTab">历史</view>
+  </view>
+
+  <view class="panel">
+    <view
+      class="sub-card {{item.state === 'ready' ? 'is-ready' : ''}}"
+      wx:for="{{tab === 'active' ? active : history}}"
+      wx:key="id"
+    >
+      <view class="sub-top">
+        <view class="sub-seat">{{item.seatCode}}</view>
+        <view class="sub-state state-{{item.state}}">{{item.stateText}}</view>
+      </view>
+
+      <view class="sub-meta">{{item.date}} · {{item.start}}-{{item.end}}</view>
+
+      <view class="sub-tip" wx:if="{{item.state === 'waiting'}}">座位释放后会在首页提醒你</view>
+      <view class="sub-tip ready" wx:if="{{item.state === 'ready'}}">座位已释放，尽快去预约</view>
+
+      <view class="sub-actions">
+        <view class="sub-btn primary" wx:if="{{item.state === 'ready'}}" bindtap="goReserve">去预约</view>
+        <view
+          class="sub-btn"
+          wx:if="{{item.state === 'waiting' || item.state === 'ready'}}"
+          data-id="{{item.id}}"
+          data-code="{{item.seatCode}}"
+          bindtap="cancel"
+        >取消订阅</view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{tab === 'active' ? !active.length : !history.length}}">
+      {{tab === 'active' ? '暂无订阅中的座位' : '暂无历史记录'}}
+    </view>
+  </view>
+
+  <view class="safe"></view>
+</view>

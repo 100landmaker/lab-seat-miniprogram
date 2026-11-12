@@ -1,0 +1,163 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+.hero {
+  position: relative;
+  padding: 40rpx 36rpx 44rpx;
+  background: linear-gradient(150deg, #0F2A5C 0%, #1D4ED8 65%, #2F7BE8 100%);
+  border-radius: 0 0 40rpx 40rpx;
+}
+
+.hero-eyebrow {
+  font-size: 22rpx;
+  color: #BFD4FF;
+  letter-spacing: 1rpx;
+}
+
+.hero-title {
+  margin-top: 14rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.hero-sub {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #C6D8FF;
+}
+
+.hero-link {
+  position: absolute;
+  right: 36rpx;
+  top: 44rpx;
+  padding: 10rpx 22rpx;
+  font-size: 20rpx;
+  color: #DCE7FF;
+  border: 1rpx solid rgba(220, 231, 255, 0.45);
+  border-radius: 24rpx;
+}
+
+/* 切换 */
+.tabs {
+  display: flex;
+  margin: 24rpx 28rpx 0;
+  padding: 6rpx;
+  background: #E9EEF6;
+  border-radius: 18rpx;
+}
+
+.tab {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #6B7A90;
+  border-radius: 14rpx;
+}
+
+.tab.active {
+  background: #FFFFFF;
+  color: #10243F;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(23, 43, 77, 0.08);
+}
+
+/* 订阅卡片 */
+.sub-card {
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.sub-card:last-child {
+  border-bottom: none;
+}
+
+.sub-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-seat {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1D4ED8;
+}
+
+.sub-state {
+  padding: 4rpx 14rpx;
+  font-size: 18rpx;
+  color: #B26A00;
+  background: #FFF4E0;
+  border-radius: 8rpx;
+}
+
+.sub-state.state-ready {
+  color: #0F9D58;
+  background: #E7F6EC;
+}
+
+.sub-state.state-expired,
+.sub-state.state-cancelled {
+  color: #8A96A8;
+  background: #F0F3F8;
+}
+
+.sub-meta {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #5B6B85;
+}
+
+.sub-tip {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #9AA5B8;
+}
+
+.sub-tip.ready {
+  color: #0F9D58;
+  font-weight: 600;
+}
+
+.sub-actions {
+  display: flex;
+  margin-top: 18rpx;
+}
+
+.sub-btn {
+  margin-right: 16rpx;
+  padding: 12rpx 32rpx;
+  font-size: 22rpx;
+  color: #C9362B;
+  background: #FFF1F0;
+  border-radius: 30rpx;
+}
+
+.sub-btn.primary {
+  color: #FFFFFF;
+  background: linear-gradient(120deg, #1D4ED8, #3B82F6);
+  box-shadow: 0 8rpx 18rpx rgba(29, 78, 216, 0.22);
+}
+
+.sub-card.is-ready {
+  margin: 0 -24rpx;
+  padding: 26rpx 24rpx;
+  background: #F7FCF9;
+  border-radius: 18rpx;
+}
+
+.empty {
+  padding: 90rpx 0;
+  text-align: center;
+  font-size: 24rpx;
+  color: #A0AABC;
+}
+
+.safe {
+  height: 20rpx;
+}

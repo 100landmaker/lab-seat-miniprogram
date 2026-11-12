@@ -51,6 +51,7 @@
   <view class="action-bar">
     <view class="action" bindtap="goReserve">预约选座</view>
     <view class="action" bindtap="goMyBook">我的预约</view>
+    <view class="action" bindtap="goFeedback">反馈报错</view>
   </view>
 
   <view class="chat-bar">

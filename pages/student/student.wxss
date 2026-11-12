@@ -35,6 +35,16 @@
   color: #C6D8FF;
 }
 
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.hero-actions .logout + .logout {
+  margin-top: 12rpx;
+}
+
 .logout {
   padding: 10rpx 20rpx;
   font-size: 20rpx;

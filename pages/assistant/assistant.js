@@ -161,5 +161,9 @@ Page({
 
   goMyBook() {
     wx.navigateTo({ url: '/pages/mybook/mybook' });
+  },
+
+  goFeedback() {
+    wx.navigateTo({ url: '/pages/feedback/feedback' });
   }
 });

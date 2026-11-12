@@ -26,7 +26,9 @@ Page({
     reserveDates: [],
     reservations: [],
     reservationCount: 0,
-    reservationSeats: 0
+    reservationSeats: 0,
+    // 用户反馈
+    feedbacks: []
   },
 
   onLoad() {
@@ -73,9 +75,10 @@ Page({
       db.getRoom(this.data.user.id),
       db.getOccupied(),
       db.getCheckins(),
-      db.getReservationsByDate(this.data.reserveDate)
+      db.getReservationsByDate(this.data.reserveDate),
+      db.getFeedbacks()
     ])
-      .then(([roomRes, occupied, checkinRes, reserveRes]) => {
+      .then(([roomRes, occupied, checkinRes, reserveRes, feedbacks]) => {
         const seats = roomRes.room.seats.map(seat => {
           let stateText = '空闲';
           if (seat.status === 'broken') stateText = '电脑故障';
@@ -111,6 +114,7 @@ Page({
           reservations: reserveRes.list,
           reservationCount: reserveRes.count,
           reservationSeats: reserveRes.seats,
+          feedbacks,
           loading: false
         });
 

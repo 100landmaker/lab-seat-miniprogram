@@ -7,7 +7,10 @@
         <view class="hero-title">{{room.name || '机房座位'}}</view>
         <view class="hero-sub">实时查看座位与电脑状态，选座即占用</view>
       </view>
-      <view class="logout" bindtap="logout">切换</view>
+      <view class="hero-actions">
+        <view class="logout" bindtap="goFeedback">反馈</view>
+        <view class="logout" bindtap="logout">切换</view>
+      </view>
     </view>
 
     <view class="stats">

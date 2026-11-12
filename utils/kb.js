@@ -69,6 +69,16 @@ const KNOWLEDGE = [
     keywords: ['注册', '账号', '登录', '密码', '忘记密码'],
     question: '账号相关问题',
     answer: '在登录页可以注册学生或教师账号，密码至少 6 位。忘记密码目前需要联系机房老师或管理员重置。'
+  },
+  {
+    keywords: ['报错', '打不开', '白屏', '闪退', '加载失败', '错误'],
+    question: '小程序报错或打不开怎么办？',
+    answer: '可以先下拉刷新或退出重进；如果是签到、预约按钮无响应，请记录操作步骤，在「反馈报错」里提交（学生端首页右上角，或智能问答底部的「反馈报错」），老师能在教师端看到。'
+  },
+  {
+    keywords: ['反馈', '建议', '意见', '投诉', '联系老师'],
+    question: '怎么反馈问题或提建议？',
+    answer: '进入「反馈报错」：选择功能建议/故障报错/其他问题，填写至少 5 个字的描述，可留联系方式。提交后教师端「反馈」页可以看到。'
   }
 ];
 
@@ -77,7 +87,8 @@ const QUICK_QUESTIONS = [
   '现在还有多少空位？',
   '我的预约有哪些？',
   '机房开放时间？',
-  '预约后可以取消吗？'
+  '预约后可以取消吗？',
+  '小程序报错了怎么办？'
 ];
 
 const SCORE_THRESHOLD = 0.28;
@@ -110,6 +121,19 @@ function collectLive(question, user) {
         `${r.date} ${r.start}-${r.end} ${r.seatCode}（${r.stateText}）`
       );
       return { text: `你当前有 ${res.current.length} 个待使用预约：\n${lines.join('\n')}` };
+    });
+  }
+
+  if (/(推荐|帮我选|哪个座位好|适合我|选哪)/.test(question)) {
+    return db.getRoom(user.id).then(res => {
+      const free = res.room.seats.filter(s => s.status === 'free');
+      if (!free.length) {
+        return { text: '当前没有空闲座位。可以到「预约选座」看看其他时段，或订阅已占用的座位，释放后会提醒你。' };
+      }
+      const seat = free.slice().sort((a, b) => a.no - b.no)[0];
+      return {
+        text: `推荐 ${seat.code}（${seat.row} 排 ${seat.col} 列）：目前空闲、电脑正常。\n想坐得靠前可以优先选小号座位；确定后到「预约选座」按日期和时段预约。`
+      };
     });
   }
 

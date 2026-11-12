@@ -6,6 +6,7 @@
     "pages/reserve/reserve",
     "pages/mybook/mybook",
     "pages/subscribe/subscribe",
+    "pages/feedback/feedback",
     "pages/assistant/assistant"
   ],
   "window": {

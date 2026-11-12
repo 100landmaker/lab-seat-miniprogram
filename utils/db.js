@@ -789,6 +789,49 @@ function consumeReadySubscriptions(userId) {
   });
 }
 
+/* ---------------- 用户反馈 ---------------- */
+
+const FEEDBACK_KEY = 'lab_feedback_v1';
+const FEEDBACK_TYPES = {
+  suggest: '功能建议',
+  bug: '故障报错',
+  other: '其他问题'
+};
+
+function getFeedbacksRaw() {
+  return wx.getStorageSync(FEEDBACK_KEY) || [];
+}
+
+function addFeedback(user, type, content, contact) {
+  return run(() => {
+    const text = String(content || '').trim();
+    if (text.length < 5) throw new Error('请至少填写 5 个字的描述');
+    if (text.length > 300) throw new Error('描述最多 300 字');
+
+    const record = {
+      id: 'f-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      userId: user.id,
+      name: user.name,
+      role: user.role,
+      type: FEEDBACK_TYPES[type] ? type : 'other',
+      typeText: FEEDBACK_TYPES[type] || FEEDBACK_TYPES.other,
+      content: text,
+      contact: String(contact || '').trim(),
+      status: 'pending',
+      createdAt: timeNow()
+    };
+
+    const list = getFeedbacksRaw();
+    list.unshift(record);
+    wx.setStorageSync(FEEDBACK_KEY, list);
+    return record;
+  });
+}
+
+function getFeedbacks() {
+  return run(() => getFeedbacksRaw());
+}
+
 module.exports = {
   init,
   login,
@@ -817,5 +860,7 @@ module.exports = {
   createSubscription,
   cancelSubscription,
   getMySubscriptions,
-  consumeReadySubscriptions
+  consumeReadySubscriptions,
+  addFeedback,
+  getFeedbacks
 };

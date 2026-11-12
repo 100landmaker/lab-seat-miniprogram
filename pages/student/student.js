@@ -233,6 +233,10 @@ Page({
     wx.navigateTo({ url: '/pages/subscribe/subscribe' });
   },
 
+  goFeedback() {
+    wx.navigateTo({ url: '/pages/feedback/feedback' });
+  },
+
   logout() {
     wx.showModal({
       title: '切换账号',

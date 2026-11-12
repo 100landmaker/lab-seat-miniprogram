@@ -36,6 +36,7 @@
     <view class="tab {{tab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">学生名单</view>
     <view class="tab {{tab === 'qr' ? 'active' : ''}}" data-tab="qr" bindtap="switchTab">签到码</view>
     <view class="tab {{tab === 'book' ? 'active' : ''}}" data-tab="book" bindtap="switchTab">预约管理</view>
+    <view class="tab {{tab === 'fb' ? 'active' : ''}}" data-tab="fb" bindtap="switchTab">反馈</view>
   </view>
 
   <!-- 座位视图 -->
@@ -188,6 +189,28 @@
     </view>
 
     <view class="empty" wx:if="{{!reservations.length}}">该日期暂无预约</view>
+  </view>
+
+  <!-- 用户反馈 -->
+  <view class="panel" wx:if="{{tab === 'fb'}}">
+    <view class="panel-head">
+      <view class="panel-title">用户反馈</view>
+      <view class="checkin-count">共 {{feedbacks.length}} 条</view>
+    </view>
+
+    <view class="fb-item" wx:for="{{feedbacks}}" wx:key="id">
+      <view class="fb-top">
+        <view class="fb-user">
+          {{item.name}}
+          <text class="fb-role">{{item.role === 'teacher' ? '教师' : '学生'}}</text>
+        </view>
+        <view class="fb-type">{{item.typeText}}</view>
+      </view>
+      <view class="fb-content">{{item.content}}</view>
+      <view class="fb-meta">{{item.createdAt}}{{item.contact ? ' · 联系方式：' + item.contact : ''}}</view>
+    </view>
+
+    <view class="empty" wx:if="{{!feedbacks.length}}">暂无用户反馈</view>
   </view>
 
   <view class="safe"></view>

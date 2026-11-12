@@ -341,6 +341,58 @@
   color: #FFFFFF;
 }
 
+/* 用户反馈 */
+.fb-item {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.fb-item:last-child {
+  border-bottom: none;
+}
+
+.fb-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fb-user {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #16243D;
+}
+
+.fb-role {
+  margin-left: 10rpx;
+  padding: 2rpx 10rpx;
+  font-size: 16rpx;
+  color: #8A96A8;
+  background: #F0F3F8;
+  border-radius: 6rpx;
+}
+
+.fb-type {
+  padding: 4rpx 14rpx;
+  font-size: 18rpx;
+  color: #1D4ED8;
+  background: #EAF1FF;
+  border-radius: 8rpx;
+}
+
+.fb-content {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #3C4A61;
+}
+
+.fb-meta {
+  margin-top: 10rpx;
+  font-size: 18rpx;
+  color: #A0AABC;
+}
+
 .safe {
   height: 20rpx;
 }

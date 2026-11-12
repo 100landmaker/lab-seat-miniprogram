@@ -35,6 +35,7 @@
     <view class="tab {{tab === 'grid' ? 'active' : ''}}" data-tab="grid" bindtap="switchTab">座位视图</view>
     <view class="tab {{tab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">学生名单</view>
     <view class="tab {{tab === 'qr' ? 'active' : ''}}" data-tab="qr" bindtap="switchTab">签到码</view>
+    <view class="tab {{tab === 'book' ? 'active' : ''}}" data-tab="book" bindtap="switchTab">预约管理</view>
   </view>
 
   <!-- 座位视图 -->
@@ -145,6 +146,48 @@
     </view>
 
     <view class="empty" wx:if="{{!checkins.length}}">暂无学生签到</view>
+  </view>
+
+  <!-- 预约管理 -->
+  <view class="panel" wx:if="{{tab === 'book'}}">
+    <view class="panel-head">
+      <view class="panel-title">预约管理</view>
+      <view class="checkin-count">共 {{reservationCount}} 个预约 · {{reservationSeats}} 个座位</view>
+    </view>
+
+    <scroll-view class="date-scroll" scroll-x>
+      <view
+        class="date-chip {{reserveDate === item.date ? 'active' : ''}}"
+        wx:for="{{reserveDates}}"
+        wx:key="date"
+        data-date="{{item.date}}"
+        bindtap="onReserveDate"
+      >
+        <view class="dc-label">{{item.label}}</view>
+        <view class="dc-md">{{item.md}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="stu-row" wx:for="{{reservations}}" wx:key="id">
+      <view class="avatar {{item.state === 'ongoing' ? '' : 'dim'}}">{{item.initial}}</view>
+      <view class="stu-main">
+        <view class="stu-name">
+          {{item.name}}
+          <text class="tag tag-in" wx:if="{{item.state === 'ongoing'}}">进行中</text>
+        </view>
+        <view class="stu-meta">{{item.seatCode}} · {{item.start}}-{{item.end}} · 预约于 {{item.createdAt}}</view>
+      </view>
+      <view
+        class="stu-btn"
+        data-id="{{item.id}}"
+        data-name="{{item.name}}"
+        data-code="{{item.seatCode}}"
+        data-time="{{item.start + '-' + item.end}}"
+        bindtap="cancelBooking"
+      >取消</view>
+    </view>
+
+    <view class="empty" wx:if="{{!reservations.length}}">该日期暂无预约</view>
   </view>
 
   <view class="safe"></view>

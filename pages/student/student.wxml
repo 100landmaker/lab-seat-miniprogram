@@ -30,6 +30,22 @@
     </view>
   </view>
 
+  <!-- 快捷入口 -->
+  <view class="quick">
+    <view class="quick-item q-blue" bindtap="goReserve">
+      <view class="q-title">预约选座</view>
+      <view class="q-sub">按日期时段预约</view>
+    </view>
+    <view class="quick-item q-green" bindtap="goMyBook">
+      <view class="q-title">我的预约</view>
+      <view class="q-sub">查看 / 取消</view>
+    </view>
+    <view class="quick-item q-purple" bindtap="goAssistant">
+      <view class="q-title">智能问答</view>
+      <view class="q-sub">有问题问助手</view>
+    </view>
+  </view>
+
   <!-- 签到门禁：未签到不允许选座 -->
   <view class="gate" wx:if="{{!checkin}}">
     <view class="gate-top">

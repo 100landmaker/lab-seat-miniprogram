@@ -191,6 +191,18 @@ Page({
     });
   },
 
+  goReserve() {
+    wx.navigateTo({ url: '/pages/reserve/reserve' });
+  },
+
+  goMyBook() {
+    wx.navigateTo({ url: '/pages/mybook/mybook' });
+  },
+
+  goAssistant() {
+    wx.navigateTo({ url: '/pages/assistant/assistant' });
+  },
+
   logout() {
     wx.showModal({
       title: '切换账号',

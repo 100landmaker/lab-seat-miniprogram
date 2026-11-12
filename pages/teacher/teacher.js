@@ -20,7 +20,13 @@ Page({
     refreshSeconds: 60,
     intervalOptions: [30, 60, 120, 300],
     checkins: [],
-    checkinStats: { inCount: 0, seatedCount: 0, outCount: 0 }
+    checkinStats: { inCount: 0, seatedCount: 0, outCount: 0 },
+    // 预约管理
+    reserveDate: '',
+    reserveDates: [],
+    reservations: [],
+    reservationCount: 0,
+    reservationSeats: 0
   },
 
   onLoad() {
@@ -34,6 +40,12 @@ Page({
       return;
     }
     this.setData({ user, refreshSeconds: db.getConfig().refreshSeconds });
+
+    const dates = db.getDateOptions();
+    this.setData({
+      reserveDates: dates,
+      reserveDate: dates[0].date
+    });
   },
 
   onShow() {
@@ -57,8 +69,13 @@ Page({
   refresh() {
     this.setData({ loading: true });
 
-    return Promise.all([db.getRoom(this.data.user.id), db.getOccupied(), db.getCheckins()])
-      .then(([roomRes, occupied, checkinRes]) => {
+    return Promise.all([
+      db.getRoom(this.data.user.id),
+      db.getOccupied(),
+      db.getCheckins(),
+      db.getReservationsByDate(this.data.reserveDate)
+    ])
+      .then(([roomRes, occupied, checkinRes, reserveRes]) => {
         const seats = roomRes.room.seats.map(seat => {
           let stateText = '空闲';
           if (seat.status === 'broken') stateText = '电脑故障';
@@ -91,6 +108,9 @@ Page({
             seatedCount: checkinRes.seatedCount,
             outCount: checkinRes.outCount
           },
+          reservations: reserveRes.list,
+          reservationCount: reserveRes.count,
+          reservationSeats: reserveRes.seats,
           loading: false
         });
 
@@ -219,6 +239,47 @@ Page({
             this.setData({ showDetail: false });
             wx.showToast({ title: '已释放座位', icon: 'success' });
             this.refresh();
+          })
+          .catch(err => wx.showToast({ title: err.message || '操作失败', icon: 'none' }));
+      }
+    });
+  },
+
+  /* ---------------- 预约管理 ---------------- */
+
+  onReserveDate(e) {
+    const date = e.currentTarget.dataset.date;
+    if (date === this.data.reserveDate) return;
+    this.setData({ reserveDate: date });
+    this.loadReservations();
+  },
+
+  loadReservations() {
+    db.getReservationsByDate(this.data.reserveDate)
+      .then(res => {
+        this.setData({
+          reservations: res.list,
+          reservationCount: res.count,
+          reservationSeats: res.seats
+        });
+      })
+      .catch(err => wx.showToast({ title: err.message || '加载失败', icon: 'none' }));
+  },
+
+  cancelBooking(e) {
+    const { id, name, code, time } = e.currentTarget.dataset;
+
+    wx.showModal({
+      title: '取消预约',
+      content: `确认取消 ${name} 的 ${time} 座位 ${code} 预约？`,
+      confirmColor: '#C9362B',
+      success: res => {
+        if (!res.confirm) return;
+
+        db.cancelReservation(id, this.data.user.id, true)
+          .then(() => {
+            wx.showToast({ title: '已取消预约', icon: 'success' });
+            this.loadReservations();
           })
           .catch(err => wx.showToast({ title: err.message || '操作失败', icon: 'none' }));
       }

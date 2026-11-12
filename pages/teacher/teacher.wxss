@@ -302,6 +302,45 @@
   background: #D5DDE8;
 }
 
+/* 预约管理日期选择 */
+.date-scroll {
+  white-space: nowrap;
+  margin-bottom: 8rpx;
+}
+
+.date-chip {
+  display: inline-block;
+  width: 112rpx;
+  margin-right: 14rpx;
+  padding: 16rpx 0;
+  text-align: center;
+  background: #F5F8FC;
+  border: 1rpx solid #E7ECF5;
+  border-radius: 16rpx;
+}
+
+.date-chip.active {
+  background: linear-gradient(140deg, #1B4B72, #2F7BE8);
+  border-color: transparent;
+}
+
+.dc-label {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #2C3E5C;
+}
+
+.dc-md {
+  margin-top: 4rpx;
+  font-size: 18rpx;
+  color: #8A96A8;
+}
+
+.date-chip.active .dc-label,
+.date-chip.active .dc-md {
+  color: #FFFFFF;
+}
+
 .safe {
   height: 20rpx;
 }

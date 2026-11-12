@@ -78,6 +78,48 @@
   color: #C6D8FF;
 }
 
+/* ---------- 快捷入口 ---------- */
+.quick {
+  display: flex;
+  margin: 24rpx 28rpx 0;
+}
+
+.quick-item {
+  flex: 1;
+  padding: 24rpx 20rpx;
+  margin-right: 16rpx;
+  border-radius: 22rpx;
+  color: #FFFFFF;
+  box-shadow: 0 10rpx 24rpx rgba(23, 43, 77, 0.12);
+}
+
+.quick-item:last-child {
+  margin-right: 0;
+}
+
+.q-blue {
+  background: linear-gradient(140deg, #1D4ED8, #3B82F6);
+}
+
+.q-green {
+  background: linear-gradient(140deg, #0E7A46, #16A34A);
+}
+
+.q-purple {
+  background: linear-gradient(140deg, #4C1D95, #7C3AED);
+}
+
+.q-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.q-sub {
+  margin-top: 6rpx;
+  font-size: 18rpx;
+  opacity: 0.82;
+}
+
 /* ---------- 签到门禁 ---------- */
 .gate {
   margin: 24rpx 28rpx 0;

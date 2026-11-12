@@ -1,0 +1,125 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero-eyebrow">学生端 · {{user.name}}</view>
+    <view class="hero-title">预约选座</view>
+    <view class="hero-sub">可选未来 7 天 · 每时段 1 小时 · 同一时段限约 1 个座位</view>
+    <view class="hero-link" bindtap="goMyBook">我的预约</view>
+  </view>
+
+  <!-- 日期 -->
+  <view class="panel">
+    <view class="panel-head">
+      <view class="panel-title">选择日期</view>
+      <view class="hint">未来 7 天</view>
+    </view>
+
+    <scroll-view class="date-scroll" scroll-x>
+      <view
+        class="date-chip {{date === item.date ? 'active' : ''}}"
+        wx:for="{{dates}}"
+        wx:key="date"
+        data-date="{{item.date}}"
+        bindtap="onDate"
+      >
+        <view class="dc-label">{{item.label}}</view>
+        <view class="dc-md">{{item.md}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 时段 -->
+  <view class="panel">
+    <view class="panel-head">
+      <view class="panel-title">选择时段</view>
+      <view class="hint">08:00 - 22:00</view>
+    </view>
+
+    <view class="slot-grid">
+      <view
+        class="slot {{slot === item.start ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}"
+        wx:for="{{slots}}"
+        wx:key="start"
+        data-start="{{item.start}}"
+        bindtap="onSlot"
+      >
+        <text class="slot-time">{{item.label}}</text>
+        <text class="slot-tag" wx:if="{{item.disabled}}">已过</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 当前时段我的预约 -->
+  <view class="mine-card" wx:if="{{mine}}">
+    <view>
+      <view class="mine-label">当前时段已预约</view>
+      <view class="mine-main">{{mine.seatCode}} · {{mine.start}}-{{mine.end}}</view>
+    </view>
+    <view class="mine-btn" bindtap="cancelMine">取消预约</view>
+  </view>
+
+  <!-- 座位 -->
+  <view class="panel">
+    <view class="panel-head">
+      <view class="panel-title">选择座位</view>
+      <view class="legend">
+        <view class="lg"><view class="dot free"></view>空闲</view>
+        <view class="lg"><view class="dot book"></view>已约</view>
+        <view class="lg"><view class="dot bad"></view>故障</view>
+      </view>
+    </view>
+
+    <view class="seat-grid">
+      <view
+        wx:for="{{seats}}"
+        wx:key="code"
+        class="seat state-{{item.state}} {{item.state === 'mine' ? 'mine' : ''}}"
+        data-code="{{item.code}}"
+        bindtap="openSeat"
+      >
+        <text class="seat-no">{{item.short}}</text>
+        <text class="seat-tag" wx:if="{{item.tagText}}">{{item.tagText}}</text>
+      </view>
+    </view>
+
+    <view class="grid-foot">点击空闲座位预约；已约座位可查看预约人</view>
+  </view>
+
+  <view class="safe"></view>
+
+  <!-- 座位详情 -->
+  <view class="mask {{showDetail ? 'show' : ''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{showDetail ? 'show' : ''}}">
+    <view class="handle"></view>
+    <block wx:if="{{detail}}">
+      <view class="sheet-head">
+        <view class="sheet-code">{{detail.code}}</view>
+        <view class="sheet-pos">{{detail.row}} 排 · {{detail.col}} 列</view>
+      </view>
+
+      <view class="info-row">
+        <text class="k">预约日期</text>
+        <text class="v">{{date}}</text>
+      </view>
+      <view class="info-row">
+        <text class="k">预约时段</text>
+        <text class="v">{{slot}} - {{slotEnd}}</text>
+      </view>
+      <view class="info-row">
+        <text class="k">电脑状态</text>
+        <text class="v {{detail.pcStatus === 'ok' ? 'ok' : 'bad'}}">
+          {{detail.pcStatus === 'ok' ? '完好可用' : '故障待修'}}
+        </text>
+      </view>
+      <view class="info-row" wx:if="{{detail.state === 'booked'}}">
+        <text class="k">预约人</text>
+        <text class="v">{{detail.bookingName}}</text>
+      </view>
+
+      <button class="sheet-btn primary" wx:if="{{detail.state === 'free'}}" bindtap="reserve">预约这个座位</button>
+      <button class="sheet-btn danger" wx:if="{{detail.state === 'mine'}}" bindtap="cancelMine">取消这个预约</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.state === 'booked'}}">该时段已被预约</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.state === 'broken'}}">电脑故障，暂不可预约</button>
+      <button class="sheet-btn text" bindtap="closeSheet">关闭</button>
+    </block>
+  </view>
+</view>

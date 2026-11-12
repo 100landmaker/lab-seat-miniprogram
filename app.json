@@ -2,7 +2,10 @@
   "pages": [
     "pages/login/login",
     "pages/student/student",
-    "pages/teacher/teacher"
+    "pages/teacher/teacher",
+    "pages/reserve/reserve",
+    "pages/mybook/mybook",
+    "pages/assistant/assistant"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0F2A5C",

@@ -389,6 +389,218 @@ function getOccupied() {
   });
 }
 
+/* ---------------- 预约选座 ---------------- */
+
+const RESERVE_KEY = 'lab_reservations_v1';
+const BOOK_DAYS = 7;
+const OPEN_HOUR = 8;
+const CLOSE_HOUR = 22;
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// 把「日期 + 时间」转成 Date，便于比较先后
+function toTime(dateStr, timeStr) {
+  const parts = String(dateStr).split('-').map(Number);
+  const hm = String(timeStr).split(':').map(Number);
+  return new Date(parts[0], parts[1] - 1, parts[2], hm[0], hm[1], 0, 0);
+}
+
+function weekdayText(d) {
+  return '周' + '日一二三四五六'.charAt(d.getDay());
+}
+
+// 可选日期：今天起 7 天
+function getDateOptions() {
+  const today = new Date();
+  const list = [];
+
+  for (let i = 0; i < BOOK_DAYS; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+    let label = weekdayText(d);
+    if (i === 0) label = '今天';
+    else if (i === 1) label = '明天';
+    else if (i === 2) label = '后天';
+
+    list.push({
+      date: dateKey(d),
+      label,
+      md: `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+      weekday: weekdayText(d)
+    });
+  }
+  return list;
+}
+
+// 可选时段：08:00-22:00，每小时一段
+function getSlots() {
+  const slots = [];
+  for (let h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
+    slots.push({
+      start: `${pad(h)}:00`,
+      end: `${pad(h + 1)}:00`,
+      label: `${pad(h)}:00`,
+      range: `${pad(h)}:00-${pad(h + 1)}:00`
+    });
+  }
+  return slots;
+}
+
+function getReservationsRaw() {
+  return wx.getStorageSync(RESERVE_KEY) || [];
+}
+
+function saveReservations(list) {
+  wx.setStorageSync(RESERVE_KEY, list);
+}
+
+// 某日期某时段已被预约的座位
+function getSeatBookings(date, start) {
+  const map = {};
+  getReservationsRaw().forEach(r => {
+    if (r.date === date && r.start === start && r.status === 'booked') {
+      map[r.seatCode] = r;
+    }
+  });
+  return map;
+}
+
+function getMyReservation(userId, date, start) {
+  return getReservationsRaw().find(r =>
+    r.userId === userId && r.date === date && r.start === start && r.status === 'booked'
+  ) || null;
+}
+
+function decorateReservation(r) {
+  const startAt = toTime(r.date, r.start).getTime();
+  const endAt = toTime(r.date, r.end).getTime();
+  const now = Date.now();
+
+  let state = 'upcoming';
+  let stateText = '待使用';
+  if (r.status === 'cancelled') {
+    state = 'cancelled';
+    stateText = '已取消';
+  } else if (now > endAt) {
+    state = 'done';
+    stateText = '已结束';
+  } else if (now >= startAt) {
+    state = 'ongoing';
+    stateText = '进行中';
+  }
+
+  return Object.assign({}, r, {
+    state,
+    stateText,
+    initial: (r.name || '').slice(0, 1)
+  });
+}
+
+// 预约面板：某时段全部预约 + 我的预约
+function getSlotBoard(userId, date, start) {
+  return run(() => {
+    const bookings = getSeatBookings(date, start);
+    return { bookings, mine: getMyReservation(userId, date, start) };
+  });
+}
+
+function createReservation(user, seatCode, date, start) {
+  return run(() => {
+    const dates = getDateOptions();
+    if (!dates.some(d => d.date === date)) throw new Error('只能预约未来 7 天内的时段');
+
+    const slot = getSlots().find(s => s.start === start);
+    if (!slot) throw new Error('该时段不存在');
+
+    if (toTime(date, start).getTime() <= Date.now()) {
+      throw new Error('该时段已开始，请选择后面的时段');
+    }
+
+    const data = getDB();
+    const seat = data.room.seats.find(s => s.code === seatCode);
+    if (!seat) throw new Error('座位不存在');
+    if (seat.status === 'broken') throw new Error('该座位电脑故障，暂不可预约');
+
+    const list = getReservationsRaw();
+    const mine = list.find(r =>
+      r.userId === user.id && r.date === date && r.start === start && r.status === 'booked'
+    );
+    if (mine) throw new Error(`你在该时段已预约 ${mine.seatCode}`);
+
+    const conflict = list.find(r =>
+      r.seatCode === seatCode && r.date === date && r.start === start && r.status === 'booked'
+    );
+    if (conflict) throw new Error('该座位该时段已被预约');
+
+    const record = {
+      id: 'r-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      userId: user.id,
+      name: user.name,
+      seatCode: seat.code,
+      date,
+      start: slot.start,
+      end: slot.end,
+      status: 'booked',
+      createdAt: timeNow()
+    };
+    list.unshift(record);
+    saveReservations(list);
+    return record;
+  });
+}
+
+function cancelReservation(id, userId, isTeacher) {
+  return run(() => {
+    const list = getReservationsRaw();
+    const item = list.find(r => r.id === id);
+    if (!item) throw new Error('预约不存在');
+    if (item.status !== 'booked') throw new Error('该预约已结束');
+    if (!isTeacher && item.userId !== userId) throw new Error('只能取消自己的预约');
+    if (Date.now() > toTime(item.date, item.end).getTime()) throw new Error('该预约已过期');
+
+    item.status = 'cancelled';
+    item.cancelTime = timeNow();
+    saveReservations(list);
+    return item;
+  });
+}
+
+// 我的预约：待使用 / 历史
+function getMyReservations(userId) {
+  return run(() => {
+    const all = getReservationsRaw()
+      .filter(r => r.userId === userId)
+      .map(decorateReservation);
+
+    const current = all
+      .filter(r => r.state === 'upcoming' || r.state === 'ongoing')
+      .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+
+    const history = all
+      .filter(r => r.state === 'done' || r.state === 'cancelled')
+      .sort((a, b) => (b.date + b.start).localeCompare(a.date + a.start));
+
+    return { current, history };
+  });
+}
+
+// 教师端：按日期查看预约
+function getReservationsByDate(date) {
+  return run(() => {
+    const list = getReservationsRaw()
+      .filter(r => r.date === date && r.status === 'booked')
+      .map(decorateReservation)
+      .sort((a, b) => a.start.localeCompare(b.start));
+
+    const seats = list
+      .map(r => r.seatCode)
+      .filter((code, index, arr) => arr.indexOf(code) === index);
+
+    return { list, count: list.length, seats: seats.length };
+  });
+}
+
 module.exports = {
   init,
   login,
@@ -406,5 +618,12 @@ module.exports = {
   takeSeat,
   releaseSeat,
   forceRelease,
-  getOccupied
+  getOccupied,
+  getDateOptions,
+  getSlots,
+  getSlotBoard,
+  createReservation,
+  cancelReservation,
+  getMyReservations,
+  getReservationsByDate
 };

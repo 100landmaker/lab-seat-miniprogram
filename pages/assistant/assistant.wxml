@@ -1,0 +1,45 @@
+<view class="chat-page">
+  <scroll-view
+    class="chat-body"
+    scroll-y
+    scroll-into-view="{{scrollTo}}"
+    scroll-with-animation
+  >
+    <view class="tip">本地知识库版 · 后续可直接喂数据扩充</view>
+
+    <view class="msg {{item.role}}" wx:for="{{messages}}" wx:key="id" id="m{{item.id}}">
+      <view class="avatar {{item.role}}">{{item.role === 'bot' ? 'AI' : initial}}</view>
+      <view class="bubble">
+        <text class="bubble-text">{{item.text}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="quick-bar">
+    <view
+      class="quick-pill"
+      wx:for="{{quick}}"
+      wx:key="*this"
+      data-text="{{item}}"
+      bindtap="onQuick"
+    >{{item}}</view>
+  </view>
+
+  <view class="action-bar">
+    <view class="action" bindtap="goReserve">预约选座</view>
+    <view class="action" bindtap="goMyBook">我的预约</view>
+  </view>
+
+  <view class="chat-bar">
+    <input
+      class="chat-input"
+      placeholder="输入你的问题..."
+      placeholder-class="ph"
+      value="{{input}}"
+      bindinput="onInput"
+      bindconfirm="onConfirm"
+      confirm-type="send"
+    />
+    <view class="send-btn" bindtap="sendTap">发送</view>
+  </view>
+</view>

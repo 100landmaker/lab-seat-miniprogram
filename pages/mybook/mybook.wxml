@@ -1,0 +1,48 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero-eyebrow">学生端 · {{user.name}}</view>
+    <view class="hero-title">我的预约</view>
+    <view class="hero-sub">待使用 {{current.length}} 个 · 历史 {{history.length}} 个</view>
+    <view class="hero-link" bindtap="goReserve">去预约</view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{tab === 'current' ? 'active' : ''}}" data-tab="current" bindtap="switchTab">待使用</view>
+    <view class="tab {{tab === 'history' ? 'active' : ''}}" data-tab="history" bindtap="switchTab">历史记录</view>
+  </view>
+
+  <view class="panel">
+    <view
+      class="book-card"
+      wx:for="{{tab === 'current' ? current : history}}"
+      wx:key="id"
+    >
+      <view class="book-top">
+        <view class="book-date">{{item.date}} · {{item.start}}-{{item.end}}</view>
+        <view class="book-state state-{{item.state}}">{{item.stateText}}</view>
+      </view>
+
+      <view class="book-main">
+        <view class="book-seat">{{item.seatCode}}</view>
+        <view class="book-meta">
+          预约于 {{item.createdAt}}
+          <block wx:if="{{item.cancelTime}}"> · 取消于 {{item.cancelTime}}</block>
+        </view>
+      </view>
+
+      <view
+        class="book-btn"
+        wx:if="{{item.state === 'upcoming'}}"
+        data-id="{{item.id}}"
+        data-code="{{item.seatCode}}"
+        bindtap="cancel"
+      >取消预约</view>
+    </view>
+
+    <view class="empty" wx:if="{{tab === 'current' ? !current.length : !history.length}}">
+      {{tab === 'current' ? '暂无待使用的预约' : '暂无历史记录'}}
+    </view>
+  </view>
+
+  <view class="safe"></view>
+</view>

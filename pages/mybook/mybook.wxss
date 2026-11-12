@@ -1,0 +1,147 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+.hero {
+  position: relative;
+  padding: 40rpx 36rpx 44rpx;
+  background: linear-gradient(150deg, #0F2A5C 0%, #1D4ED8 65%, #2F7BE8 100%);
+  border-radius: 0 0 40rpx 40rpx;
+}
+
+.hero-eyebrow {
+  font-size: 22rpx;
+  color: #BFD4FF;
+  letter-spacing: 1rpx;
+}
+
+.hero-title {
+  margin-top: 14rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.hero-sub {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #C6D8FF;
+}
+
+.hero-link {
+  position: absolute;
+  right: 36rpx;
+  top: 44rpx;
+  padding: 10rpx 22rpx;
+  font-size: 20rpx;
+  color: #DCE7FF;
+  border: 1rpx solid rgba(220, 231, 255, 0.45);
+  border-radius: 24rpx;
+}
+
+/* 切换 */
+.tabs {
+  display: flex;
+  margin: 24rpx 28rpx 0;
+  padding: 6rpx;
+  background: #E9EEF6;
+  border-radius: 18rpx;
+}
+
+.tab {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #6B7A90;
+  border-radius: 14rpx;
+}
+
+.tab.active {
+  background: #FFFFFF;
+  color: #10243F;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(23, 43, 77, 0.08);
+}
+
+/* 预约卡片 */
+.book-card {
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.book-card:last-child {
+  border-bottom: none;
+}
+
+.book-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.book-date {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #16243D;
+}
+
+.book-state {
+  padding: 4rpx 14rpx;
+  font-size: 18rpx;
+  border-radius: 8rpx;
+  color: #1D4ED8;
+  background: #EAF1FF;
+}
+
+.book-state.state-ongoing {
+  color: #0F9D58;
+  background: #E7F6EC;
+}
+
+.book-state.state-done,
+.book-state.state-cancelled {
+  color: #8A96A8;
+  background: #F0F3F8;
+}
+
+.book-main {
+  display: flex;
+  align-items: baseline;
+  margin-top: 14rpx;
+}
+
+.book-seat {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1D4ED8;
+}
+
+.book-meta {
+  margin-left: 16rpx;
+  font-size: 20rpx;
+  color: #8A96A8;
+}
+
+.book-btn {
+  display: inline-block;
+  margin-top: 18rpx;
+  padding: 12rpx 34rpx;
+  font-size: 22rpx;
+  color: #C9362B;
+  background: #FFF1F0;
+  border-radius: 30rpx;
+}
+
+.empty {
+  padding: 90rpx 0;
+  text-align: center;
+  font-size: 24rpx;
+  color: #A0AABC;
+}
+
+.safe {
+  height: 20rpx;
+}

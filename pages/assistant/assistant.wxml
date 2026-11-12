@@ -1,16 +1,39 @@
 <view class="chat-page">
+  <view class="ai-bar">
+    <view class="ai-status">
+      <view class="dot {{aiReady ? 'on' : ''}}"></view>
+      <text class="ai-mode">{{aiReady ? '大模型 + RAG' : '本地知识库 RAG'}}</text>
+      <text class="ai-count">{{kbCount}} 条知识</text>
+    </view>
+    <view class="ai-settings" bindtap="openSettings">AI 设置</view>
+  </view>
+
   <scroll-view
     class="chat-body"
     scroll-y
     scroll-into-view="{{scrollTo}}"
     scroll-with-animation
   >
-    <view class="tip">本地知识库版 · 后续可直接喂数据扩充</view>
-
     <view class="msg {{item.role}}" wx:for="{{messages}}" wx:key="id" id="m{{item.id}}">
       <view class="avatar {{item.role}}">{{item.role === 'bot' ? 'AI' : initial}}</view>
-      <view class="bubble">
-        <text class="bubble-text">{{item.text}}</text>
+      <view class="bubble-wrap">
+        <view class="mode-tag" wx:if="{{item.role === 'bot' && item.mode === 'llm'}}">大模型 · RAG</view>
+        <view class="bubble">
+          <text class="bubble-text">{{item.text}}</text>
+        </view>
+        <view class="refs" wx:if="{{item.role === 'bot' && item.refs.length}}">
+          <text class="refs-label">参考</text>
+          <text class="ref" wx:for="{{item.refs}}" wx:for-item="ref" wx:key="*this">{{ref}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="msg bot" wx:if="{{sending}}">
+      <view class="avatar bot">AI</view>
+      <view class="bubble-wrap">
+        <view class="bubble">
+          <text class="bubble-text typing">正在检索知识库并思考...</text>
+        </view>
       </view>
     </view>
   </scroll-view>
@@ -41,5 +64,59 @@
       confirm-type="send"
     />
     <view class="send-btn" bindtap="sendTap">发送</view>
+  </view>
+
+  <!-- AI 设置 -->
+  <view class="mask {{showSettings ? 'show' : ''}}" bindtap="closeSettings"></view>
+  <view class="sheet {{showSettings ? 'show' : ''}}">
+    <view class="handle"></view>
+
+    <view class="set-title">AI 设置</view>
+    <view class="set-tip">密钥仅保存在本机，正式上线请改由后端代理调用大模型。</view>
+
+    <view class="set-row">
+      <text class="set-label">启用大模型</text>
+      <switch checked="{{form.enabled}}" color="#1D4ED8" bindchange="onSwitch" />
+    </view>
+
+    <view class="set-block">
+      <text class="set-label">接口地址</text>
+      <input
+        class="set-input"
+        value="{{form.baseUrl}}"
+        data-field="baseUrl"
+        bindinput="onField"
+        placeholder="https://api.deepseek.com"
+        placeholder-class="ph"
+      />
+    </view>
+
+    <view class="set-block">
+      <text class="set-label">模型名称</text>
+      <input
+        class="set-input"
+        value="{{form.model}}"
+        data-field="model"
+        bindinput="onField"
+        placeholder="deepseek-chat"
+        placeholder-class="ph"
+      />
+    </view>
+
+    <view class="set-block">
+      <text class="set-label">API Key</text>
+      <input
+        class="set-input"
+        value="{{form.apiKey}}"
+        password
+        data-field="apiKey"
+        bindinput="onField"
+        placeholder="sk-..."
+        placeholder-class="ph"
+      />
+    </view>
+
+    <button class="sheet-btn primary" bindtap="saveSettings">保存</button>
+    <button class="sheet-btn text" bindtap="closeSettings">取消</button>
   </view>
 </view>

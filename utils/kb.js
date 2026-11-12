@@ -1,9 +1,12 @@
 const db = require('./db');
+const ai = require('./ai');
+const retrieval = require('./retrieval');
 
 /**
- * 本地知识库（智能问答）
+ * 本地知识库（RAG 语料）
  *
  * 后续喂数据：直接往 KNOWLEDGE 数组追加条目即可，页面代码无需改动。
+ * 也可以把同结构条目写进 storage（key: lab_kb_custom_v1），会自动参与检索。
  * 每条格式：
  * {
  *   keywords: ['关键词1', '关键词2'], // 问题里包含越多、关键词越长，得分越高
@@ -77,75 +80,92 @@ const QUICK_QUESTIONS = [
   '预约后可以取消吗？'
 ];
 
-function matchKB(text) {
-  let best = null;
-  let bestScore = 0;
+const SCORE_THRESHOLD = 0.28;
 
-  KNOWLEDGE.forEach(item => {
-    let score = 0;
-    item.keywords.forEach(keyword => {
-      if (text.indexOf(keyword) > -1) score += keyword.length;
+function allKnowledge() {
+  return KNOWLEDGE.concat(retrieval.getCustomEntries());
+}
+
+function count() {
+  return allKnowledge().length;
+}
+
+// 需要实时数据的意图：直接查本地数据层
+function collectLive(question, user) {
+  if (/(空位|空闲|有没有座|还有座|余座|座位情况|还有位置)/.test(question)) {
+    return db.getRoom(user.id).then(res => {
+      const s = res.stats;
+      return {
+        text: `当前 ${res.room.name} 空闲 ${s.free} 个座位（共 ${s.total} 个，使用中 ${s.occupied} 个，故障 ${s.broken} 个）。\n想保留座位的话，可以到「预约选座」按日期和时段预约。`
+      };
     });
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  });
+  }
 
-  return bestScore > 0 ? best : null;
+  if (/(我的预约|预约记录|我约了|查预约|约了哪些)/.test(question)) {
+    return db.getMyReservations(user.id).then(res => {
+      if (!res.current.length) {
+        return { text: '你目前没有待使用的预约。可以到「预约选座」选日期、时段和座位。' };
+      }
+      const lines = res.current.slice(0, 3).map(r =>
+        `${r.date} ${r.start}-${r.end} ${r.seatCode}（${r.stateText}）`
+      );
+      return { text: `你当前有 ${res.current.length} 个待使用预约：\n${lines.join('\n')}` };
+    });
+  }
+
+  return Promise.resolve(null);
 }
 
-function freeSeatAnswer(user) {
-  return db.getRoom(user.id).then(res => {
-    const s = res.stats;
-    return `当前 ${res.room.name} 空闲 ${s.free} 个座位（共 ${s.total} 个，使用中 ${s.occupied} 个，故障 ${s.broken} 个）。\n想保留座位的话，可以到「预约选座」按日期和时段预约。`;
-  });
-}
-
-function myReservationAnswer(user) {
-  return db.getMyReservations(user.id).then(res => {
-    if (!res.current.length) {
-      return '你目前没有待使用的预约。可以到「预约选座」选日期、时段和座位。';
-    }
-    const lines = res.current.slice(0, 3).map(r =>
-      `${r.date} ${r.start}-${r.end} ${r.seatCode}（${r.stateText}）`
-    );
-    return `你当前有 ${res.current.length} 个待使用预约：\n${lines.join('\n')}`;
-  });
-}
-
-function delay(text) {
-  return new Promise(resolve => {
-    setTimeout(() => resolve({ text }), 260);
-  });
+function localAnswer(hits, live) {
+  if (live) return live.text;
+  if (hits.length && hits[0].score >= SCORE_THRESHOLD) return hits[0].answer;
+  return '知识库里还没有找到直接相关的内容。你可以换个问法，或在 utils/kb.js 里补充这条知识；配置大模型后，我也会结合检索到的资料尝试回答。';
 }
 
 /**
- * 回答一个问题
- * @param {string} text 用户问题
- * @param {object} user 当前登录用户
- * @returns {Promise<{text: string}>}
+ * 回答一个问题（RAG + 可选大模型）
+ * 流程：检索知识 → 查询实时数据 → 有大模型则生成，否则用本地答案兜底
+ * @returns {Promise<{text: string, refs: string[], mode: 'llm'|'local'}>}
  */
 function ask(text, user) {
-  const q = String(text || '').trim();
-  if (!q) return Promise.resolve({ text: '请输入你的问题。' });
-
-  if (/(空位|空闲|有没有座|还有座|余座|座位情况|还有位置)/.test(q)) {
-    return freeSeatAnswer(user).then(answer => ({ text: answer }));
+  const question = String(text || '').trim();
+  if (!question) {
+    return Promise.resolve({ text: '请输入你的问题。', refs: [], mode: 'local' });
   }
 
-  if (/(我的预约|预约记录|我约了|查预约|约了哪些)/.test(q)) {
-    return myReservationAnswer(user).then(answer => ({ text: answer }));
-  }
+  const hits = retrieval.retrieve(question, allKnowledge(), 3);
+  const refs = hits
+    .filter(item => item.score >= SCORE_THRESHOLD)
+    .map(item => item.question)
+    .slice(0, 3);
 
-  const hit = matchKB(q);
-  if (hit) return delay(hit.answer);
+  const config = ai.getConfig();
 
-  return delay('这个问题知识库里还没有收录。你可以换个问法，或让管理员在 utils/kb.js 里补充这条知识。');
+  return collectLive(question, user).then(live => {
+    const liveText = live ? live.text : '';
+
+    if (ai.isReady(config)) {
+      return ai.chat(ai.buildMessages(question, hits, liveText), config)
+        .then(answer => ({ text: answer, refs, mode: 'llm' }))
+        .catch(err => ({
+          text: localAnswer(hits, live) + `\n\n（大模型调用失败：${err.message}，已回退到本地知识库）`,
+          refs,
+          mode: 'local'
+        }));
+    }
+
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve({ text: localAnswer(hits, live), refs, mode: 'local' });
+      }, 260);
+    });
+  });
 }
 
 module.exports = {
   KNOWLEDGE,
   QUICK_QUESTIONS,
-  ask
+  ask,
+  count,
+  allKnowledge
 };

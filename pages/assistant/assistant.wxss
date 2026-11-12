@@ -9,20 +9,63 @@ page {
   background: #F4F6FB;
 }
 
-.chat-body {
-  flex: 1;
-  padding: 24rpx 28rpx 8rpx;
-  box-sizing: border-box;
+/* ---------- 顶部状态栏 ---------- */
+.ai-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 28rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #EDF1F7;
 }
 
-.tip {
-  margin-bottom: 24rpx;
-  text-align: center;
+.ai-status {
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  margin-right: 10rpx;
+  border-radius: 50%;
+  background: #C9D4E5;
+}
+
+.dot.on {
+  background: #0F9D58;
+  box-shadow: 0 0 0 6rpx rgba(15, 157, 88, 0.12);
+}
+
+.ai-mode {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #16243D;
+}
+
+.ai-count {
+  margin-left: 12rpx;
   font-size: 18rpx;
   color: #A0AABC;
 }
 
-/* 消息 */
+.ai-settings {
+  padding: 8rpx 22rpx;
+  font-size: 20rpx;
+  color: #1D4ED8;
+  background: #EAF1FF;
+  border-radius: 22rpx;
+}
+
+/* ---------- 消息区 ---------- */
+.chat-body {
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  padding: 24rpx 28rpx 8rpx;
+  box-sizing: border-box;
+}
+
 .msg {
   display: flex;
   align-items: flex-start;
@@ -55,9 +98,19 @@ page {
   background: linear-gradient(140deg, #1B4B72, #2F7BE8);
 }
 
-.bubble {
+.bubble-wrap {
+  display: flex;
+  flex-direction: column;
   max-width: 72%;
   margin: 0 18rpx;
+}
+
+.msg.user .bubble-wrap {
+  align-items: flex-end;
+}
+
+.bubble {
+  max-width: 100%;
   padding: 20rpx 24rpx;
   background: #FFFFFF;
   border-radius: 20rpx;
@@ -73,13 +126,49 @@ page {
   line-height: 1.65;
   color: #1B2942;
   white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .msg.user .bubble-text {
   color: #FFFFFF;
 }
 
-/* 快捷问题 */
+.typing {
+  color: #8A96A8;
+}
+
+.mode-tag {
+  margin-bottom: 8rpx;
+  padding: 2rpx 12rpx;
+  font-size: 16rpx;
+  color: #1D4ED8;
+  background: #EAF1FF;
+  border-radius: 6rpx;
+}
+
+.refs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10rpx;
+}
+
+.refs-label {
+  margin-right: 8rpx;
+  font-size: 16rpx;
+  color: #A0AABC;
+}
+
+.ref {
+  margin: 0 8rpx 6rpx 0;
+  padding: 4rpx 12rpx;
+  font-size: 16rpx;
+  color: #5B6B85;
+  background: #F0F4FB;
+  border-radius: 8rpx;
+}
+
+/* ---------- 快捷问题 ---------- */
 .quick-bar {
   display: flex;
   flex-wrap: wrap;
@@ -95,7 +184,7 @@ page {
   border-radius: 24rpx;
 }
 
-/* 快捷入口 */
+/* ---------- 快捷入口 ---------- */
 .action-bar {
   display: flex;
   padding: 0 28rpx;
@@ -118,7 +207,7 @@ page {
   margin-right: 0;
 }
 
-/* 输入栏 */
+/* ---------- 输入栏 ---------- */
 .chat-bar {
   display: flex;
   align-items: center;
@@ -153,4 +242,57 @@ page {
   background: linear-gradient(120deg, #1D4ED8, #3B82F6);
   border-radius: 38rpx;
   box-shadow: 0 10rpx 20rpx rgba(29, 78, 216, 0.24);
+}
+
+/* ---------- AI 设置弹层 ---------- */
+.sheet {
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.set-title {
+  margin-bottom: 8rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #16243D;
+}
+
+.set-tip {
+  margin-bottom: 16rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: #9AA5B8;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.set-block {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.set-label {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 24rpx;
+  color: #5B6B85;
+}
+
+.set-row .set-label {
+  margin-bottom: 0;
+}
+
+.set-input {
+  height: 72rpx;
+  padding: 0 22rpx;
+  font-size: 24rpx;
+  background: #F5F8FC;
+  border: 1rpx solid #E7ECF5;
+  border-radius: 14rpx;
 }

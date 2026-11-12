@@ -1,0 +1,278 @@
+/* 全局样式与两端口共用的座位组件 */
+page {
+  background: #F4F6FB;
+  color: #1B2942;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+view, text, input, button {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  font-size: 28rpx;
+  line-height: 1.4;
+  background: transparent;
+  border-radius: 0;
+}
+
+button::after {
+  border: none;
+}
+
+/* ---------- 通用卡片 ---------- */
+.panel {
+  margin: 24rpx 28rpx;
+  padding: 28rpx 24rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 32rpx rgba(23, 43, 77, 0.06);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.panel-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #16243D;
+}
+
+/* ---------- 图例 ---------- */
+.legend {
+  display: flex;
+  align-items: center;
+}
+
+.lg {
+  display: flex;
+  align-items: center;
+  margin-left: 18rpx;
+  font-size: 20rpx;
+  color: #7A879C;
+}
+
+.dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+  background: #C9D4E5;
+}
+
+.dot.free { background: #FFFFFF; border: 2rpx solid #C9D4E5; }
+.dot.occ { background: #EF5350; }
+.dot.bad { background: #A8B3C5; }
+
+/* ---------- 座位网格 ---------- */
+.seat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -4rpx;
+}
+
+.seat {
+  position: relative;
+  width: calc((100% - 56rpx) / 8);
+  height: 76rpx;
+  margin: 4rpx;
+  border-radius: 14rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #DCE4F2;
+  background: #FFFFFF;
+  transition: transform 0.15s ease;
+}
+
+.seat:active {
+  transform: scale(0.94);
+}
+
+.seat-no {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #2C3E5C;
+  line-height: 1.1;
+}
+
+.seat-tag {
+  font-size: 16rpx;
+  line-height: 1.2;
+  margin-top: 2rpx;
+  color: #94A3B8;
+  transform: scale(0.92);
+}
+
+/* 已占用 */
+.seat.state-occupied {
+  background: #FFF1F0;
+  border-color: #FFD4CF;
+}
+
+.seat.state-occupied .seat-no {
+  color: #C9362B;
+}
+
+.seat.state-occupied .seat-tag {
+  color: #E4655A;
+}
+
+/* 故障 */
+.seat.state-broken {
+  background: #EEF1F6;
+  border-color: #E1E6EF;
+}
+
+.seat.state-broken .seat-no {
+  color: #A8B3C5;
+  text-decoration: line-through;
+}
+
+/* 我的座位 */
+.seat.mine {
+  background: linear-gradient(140deg, #1D4ED8, #3B82F6);
+  border-color: transparent;
+  box-shadow: 0 8rpx 20rpx rgba(29, 78, 216, 0.35);
+}
+
+.seat.mine .seat-no,
+.seat.mine .seat-tag {
+  color: #FFFFFF;
+}
+
+.grid-foot {
+  margin-top: 18rpx;
+  text-align: center;
+  font-size: 20rpx;
+  color: #A0AABC;
+}
+
+/* ---------- 底部详情弹层 ---------- */
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 22, 40, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  z-index: 20;
+}
+
+.mask.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 18rpx 36rpx calc(36rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-radius: 36rpx 36rpx 0 0;
+  transform: translateY(110%);
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.sheet.show {
+  transform: translateY(0);
+}
+
+.handle {
+  width: 72rpx;
+  height: 8rpx;
+  border-radius: 8rpx;
+  background: #E2E8F2;
+  margin: 0 auto 24rpx;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8rpx;
+}
+
+.sheet-code {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #16243D;
+}
+
+.sheet-pos {
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: #8A96A8;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F1F4F9;
+}
+
+.info-row .k {
+  font-size: 24rpx;
+  color: #7A879C;
+}
+
+.info-row .v {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #16243D;
+}
+
+.info-row .v.ok { color: #0F9D58; }
+.info-row .v.bad { color: #D93025; }
+
+.sheet-btn {
+  width: 100%;
+  height: 88rpx;
+  margin-top: 20rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-btn.primary {
+  background: linear-gradient(120deg, #1D4ED8, #3B82F6);
+  color: #FFFFFF;
+  box-shadow: 0 12rpx 24rpx rgba(29, 78, 216, 0.28);
+}
+
+.sheet-btn.danger {
+  background: #FFF1F0;
+  color: #C9362B;
+}
+
+.sheet-btn.ghost {
+  background: #F2F5FA;
+  color: #6B7A90;
+}
+
+.sheet-btn.text {
+  margin-top: 8rpx;
+  background: transparent;
+  color: #9AA5B8;
+  font-weight: 400;
+  font-size: 24rpx;
+  height: 72rpx;
+}

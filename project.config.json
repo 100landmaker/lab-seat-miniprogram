@@ -1,0 +1,19 @@
+{
+  "description": "机房座位查看与选座小程序（前端演示版）",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.4.0",
+  "appid": "touristappid",
+  "projectname": "lab-seat-miniprogram",
+  "miniprogramRoot": "./"
+}

@@ -1,0 +1,129 @@
+<view class="page">
+  <!-- 顶部概览 -->
+  <view class="hero">
+    <view class="hero-top">
+      <view>
+        <view class="hero-eyebrow">学生端 · {{user.name}}</view>
+        <view class="hero-title">{{room.name || '机房座位'}}</view>
+        <view class="hero-sub">实时查看座位与电脑状态，选座即占用</view>
+      </view>
+      <view class="logout" bindtap="logout">切换</view>
+    </view>
+
+    <view class="stats">
+      <view class="stat">
+        <text class="num">{{stats.free}}</text>
+        <text class="lab">空闲</text>
+      </view>
+      <view class="stat">
+        <text class="num occ">{{stats.occupied}}</text>
+        <text class="lab">使用中</text>
+      </view>
+      <view class="stat">
+        <text class="num bad">{{stats.broken}}</text>
+        <text class="lab">故障</text>
+      </view>
+      <view class="stat total">
+        <text class="num">{{stats.total}}</text>
+        <text class="lab">总座位</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 签到门禁：未签到不允许选座 -->
+  <view class="gate" wx:if="{{!checkin}}">
+    <view class="gate-top">
+      <view class="gate-badge">未签到</view>
+      <view class="gate-title">先签到，再选座</view>
+    </view>
+    <view class="gate-sub">扫描教室大屏上的二维码，签到成功后即可选择空闲座位</view>
+    <button class="gate-btn" bindtap="scanCheckIn">扫码签到</button>
+    <view class="gate-link" bindtap="manualCheckIn">扫不出来？手动输入 6 位签到码</view>
+  </view>
+
+  <view class="gate ok" wx:if="{{checkin && !mySeat}}">
+    <view class="gate-top">
+      <view class="gate-badge ok">已签到</view>
+      <view class="gate-title">{{checkin.time}} · 请选择座位</view>
+    </view>
+    <view class="gate-sub">点击下方任意空闲座位完成占座</view>
+  </view>
+
+  <!-- 我的座位 -->
+  <view class="my-card" wx:if="{{mySeat}}">
+    <view class="my-left">
+      <view class="my-label">我的座位</view>
+      <view class="my-code">{{mySeat.code}}</view>
+      <view class="my-meta">{{mySeat.row}} 排 {{mySeat.col}} 列 · {{mySeat.occupant.time}}</view>
+    </view>
+    <view class="my-btn" bindtap="releaseMine">退座</view>
+  </view>
+
+  <!-- 座位分布 -->
+  <view class="panel">
+    <view class="panel-head">
+      <view class="panel-title">座位分布</view>
+      <view class="legend">
+        <view class="lg"><view class="dot free"></view>空闲</view>
+        <view class="lg"><view class="dot occ"></view>使用中</view>
+        <view class="lg"><view class="dot bad"></view>故障</view>
+      </view>
+    </view>
+
+    <view class="seat-grid">
+      <view
+        wx:for="{{seats}}"
+        wx:key="code"
+        class="seat state-{{item.status}} {{item.mine ? 'mine' : ''}}"
+        data-code="{{item.code}}"
+        bindtap="openSeat"
+      >
+        <text class="seat-no">{{item.short}}</text>
+        <text class="seat-tag" wx:if="{{item.status === 'broken'}}">故障</text>
+        <text class="seat-tag" wx:elif="{{item.initial}}">{{item.initial}}</text>
+      </view>
+    </view>
+
+    <view class="grid-foot">点击座位查看电脑状态并选座</view>
+  </view>
+
+  <view class="safe"></view>
+
+  <!-- 座位详情 -->
+  <view class="mask {{showDetail ? 'show' : ''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{showDetail ? 'show' : ''}}">
+    <view class="handle"></view>
+    <block wx:if="{{detail}}">
+      <view class="sheet-head">
+        <view class="sheet-code">{{detail.code}}</view>
+        <view class="sheet-pos">{{detail.row}} 排 · {{detail.col}} 列</view>
+      </view>
+
+      <view class="info-row">
+        <text class="k">电脑状态</text>
+        <text class="v {{detail.pcStatus === 'ok' ? 'ok' : 'bad'}}">
+          {{detail.pcStatus === 'ok' ? '完好可用' : '故障待修'}}
+        </text>
+      </view>
+      <view class="info-row">
+        <text class="k">座位状态</text>
+        <text class="v">{{detail.stateText}}</text>
+      </view>
+      <view class="info-row" wx:if="{{detail.occupant}}">
+        <text class="k">当前使用者</text>
+        <text class="v">{{detail.occupant.name}}</text>
+      </view>
+      <view class="info-row" wx:if="{{detail.occupant}}">
+        <text class="k">选座时间</text>
+        <text class="v">{{detail.occupant.time}}</text>
+      </view>
+
+      <button class="sheet-btn primary" wx:if="{{detail.status === 'free' && checkin}}" bindtap="takeSeat">选择这个座位</button>
+      <button class="sheet-btn primary" wx:if="{{detail.status === 'free' && !checkin}}" bindtap="scanCheckIn">先扫码签到</button>
+      <button class="sheet-btn danger" wx:if="{{detail.mine}}" bindtap="releaseDetail">退出这个座位</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.status === 'occupied' && !detail.mine}}" bindtap="closeSheet">该座位已被占用</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.status === 'broken'}}" bindtap="closeSheet">电脑故障，暂不可选</button>
+      <button class="sheet-btn text" bindtap="closeSheet">关闭</button>
+    </block>
+  </view>
+</view>

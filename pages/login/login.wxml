@@ -1,0 +1,44 @@
+<view class="wrap">
+  <view class="bg">
+    <view class="circle c1"></view>
+    <view class="circle c2"></view>
+    <view class="brand">
+      <view class="brand-mark">LAB</view>
+      <view class="brand-title">机房座位</view>
+      <view class="brand-sub">选座 · 退座 · 电脑状态，一屏看清</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="tabs">
+      <view class="tab {{role === 'student' ? 'active' : ''}}" data-role="student" bindtap="switchRole">学生</view>
+      <view class="tab {{role === 'teacher' ? 'active' : ''}}" data-role="teacher" bindtap="switchRole">教师</view>
+    </view>
+
+    <view class="field" wx:if="{{mode === 'register'}}">
+      <text class="label">姓名</text>
+      <input class="input" placeholder="请输入真实姓名" placeholder-class="ph" value="{{name}}" bindinput="onName" />
+    </view>
+
+    <view class="field">
+      <text class="label">账号</text>
+      <input class="input" placeholder="请输入账号" placeholder-class="ph" value="{{username}}" bindinput="onUsername" />
+    </view>
+
+    <view class="field">
+      <text class="label">密码</text>
+      <input class="input" password placeholder="不少于 6 位" placeholder-class="ph" value="{{password}}" bindinput="onPassword" />
+    </view>
+
+    <button class="submit" bindtap="submit" loading="{{loading}}">
+      {{mode === 'login' ? '登 录' : '注册并进入'}}
+    </button>
+
+    <view class="switch">
+      <text wx:if="{{mode === 'login'}}" bindtap="toRegister">没有账号？立即注册</text>
+      <text wx:else bindtap="toLogin">已有账号？返回登录</text>
+    </view>
+  </view>
+
+  <view class="hint">体验账号：学生 xiaoming / 123456　教师 teacher / 123456</view>
+</view>

@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/student/student",
+    "pages/teacher/teacher"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#0F2A5C",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "机房座位管理",
+    "backgroundColor": "#F4F6FB",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

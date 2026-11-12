@@ -1,0 +1,187 @@
+<view class="page">
+  <!-- 顶部 -->
+  <view class="hero">
+    <view class="hero-top">
+      <view>
+        <view class="hero-eyebrow">教师端 · {{user.name}}</view>
+        <view class="hero-title">{{room.name || '机房座位'}}</view>
+        <view class="hero-sub">查看全部座位状态，可代学生退座</view>
+      </view>
+      <view class="logout" bindtap="logout">切换</view>
+    </view>
+
+    <view class="stats">
+      <view class="stat">
+        <text class="num">{{stats.free}}</text>
+        <text class="lab">空闲</text>
+      </view>
+      <view class="stat">
+        <text class="num occ">{{stats.occupied}}</text>
+        <text class="lab">使用中</text>
+      </view>
+      <view class="stat">
+        <text class="num bad">{{stats.broken}}</text>
+        <text class="lab">故障</text>
+      </view>
+      <view class="stat total">
+        <text class="num">{{stats.total}}</text>
+        <text class="lab">总座位</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 视图切换 -->
+  <view class="tabs">
+    <view class="tab {{tab === 'grid' ? 'active' : ''}}" data-tab="grid" bindtap="switchTab">座位视图</view>
+    <view class="tab {{tab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">学生名单</view>
+    <view class="tab {{tab === 'qr' ? 'active' : ''}}" data-tab="qr" bindtap="switchTab">签到码</view>
+  </view>
+
+  <!-- 座位视图 -->
+  <view class="panel" wx:if="{{tab === 'grid'}}">
+    <view class="panel-head">
+      <view class="panel-title">全部座位</view>
+      <view class="legend">
+        <view class="lg"><view class="dot free"></view>空闲</view>
+        <view class="lg"><view class="dot occ"></view>有人</view>
+        <view class="lg"><view class="dot bad"></view>故障</view>
+      </view>
+    </view>
+
+    <view class="seat-grid">
+      <view
+        wx:for="{{seats}}"
+        wx:key="code"
+        class="seat state-{{item.status}}"
+        data-code="{{item.code}}"
+        bindtap="openSeat"
+      >
+        <text class="seat-no">{{item.short}}</text>
+        <text class="seat-tag" wx:if="{{item.status === 'broken'}}">故障</text>
+        <text class="seat-tag" wx:elif="{{item.initial}}">{{item.initial}}</text>
+      </view>
+    </view>
+    <view class="grid-foot">点击座位可查看使用者并强制退座</view>
+  </view>
+
+  <!-- 学生名单 -->
+  <view class="panel" wx:if="{{tab === 'list'}}">
+    <view class="search">
+      <input
+        class="search-input"
+        placeholder="搜索学生姓名或座位号"
+        placeholder-class="ph"
+        value="{{keyword}}"
+        bindinput="onSearch"
+      />
+    </view>
+
+    <view class="stu-row" wx:for="{{list}}" wx:key="code">
+      <view class="avatar">{{item.initial}}</view>
+      <view class="stu-main">
+        <view class="stu-name">{{item.name}}</view>
+        <view class="stu-meta">{{item.code}} · {{item.row}} 排 {{item.col}} 列 · {{item.time}}</view>
+      </view>
+      <view class="stu-btn" data-code="{{item.code}}" data-name="{{item.name}}" bindtap="forceFromList">退座</view>
+    </view>
+
+    <view class="empty" wx:if="{{!list.length}}">
+      {{keyword ? '没有匹配的学生' : '当前没有学生占用座位'}}
+    </view>
+  </view>
+
+  <!-- 签到二维码 -->
+  <view class="panel qr-panel" wx:if="{{tab === 'qr'}}">
+    <view class="panel-head">
+      <view class="panel-title">教室签到码</view>
+      <view class="live">实时刷新</view>
+    </view>
+    <view class="qr-sub">投屏到教室大屏，学生打开小程序「扫码签到」</view>
+
+    <view class="qr-box">
+      <image class="qr-img" src="{{qrUrl}}" mode="widthFix"></image>
+      <view class="qr-code">签到码 <text class="qr-code-num">{{qr.code}}</text></view>
+      <view class="qr-timer">剩余 <text class="qr-timer-num">{{secondsLeft}}</text> 秒自动刷新</view>
+    </view>
+
+    <view class="qr-label">二维码刷新间隔</view>
+    <view class="qr-intervals">
+      <view
+        wx:for="{{intervalOptions}}"
+        wx:key="*this"
+        class="chip {{refreshSeconds === item ? 'active' : ''}}"
+        data-sec="{{item}}"
+        bindtap="onInterval"
+      >{{item}} 秒</view>
+    </view>
+    <view class="qr-tip">学生扫码签到后，还需自己选择空闲座位；退座会同步结束签到。</view>
+  </view>
+
+  <!-- 实时签到情况 -->
+  <view class="panel" wx:if="{{tab === 'qr'}}">
+    <view class="panel-head">
+      <view class="panel-title">实时签到</view>
+      <view class="checkin-count">在座 {{checkinStats.seatedCount}} · 已签到 {{checkinStats.inCount}}</view>
+    </view>
+
+    <view class="stu-row" wx:for="{{checkins}}" wx:key="id">
+      <view class="avatar {{item.status === 'out' ? 'dim' : ''}}">{{item.initial}}</view>
+      <view class="stu-main">
+        <view class="stu-name">
+          {{item.name}}
+          <text class="tag {{item.status === 'out' ? 'tag-out' : 'tag-in'}}">{{item.status === 'out' ? '已退座' : (item.seatCode ? '在座' : '已签到')}}</text>
+        </view>
+        <view class="stu-meta">
+          {{item.seatCode ? item.seatCode + ' · ' : '未选座 · '}}{{item.time}}
+        </view>
+      </view>
+      <view
+        class="stu-btn"
+        wx:if="{{item.status === 'in' && item.seatCode}}"
+        data-code="{{item.seatCode}}"
+        data-name="{{item.name}}"
+        bindtap="forceFromList"
+      >退座</view>
+    </view>
+
+    <view class="empty" wx:if="{{!checkins.length}}">暂无学生签到</view>
+  </view>
+
+  <view class="safe"></view>
+
+  <!-- 座位详情 -->
+  <view class="mask {{showDetail ? 'show' : ''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{showDetail ? 'show' : ''}}">
+    <view class="handle"></view>
+    <block wx:if="{{detail}}">
+      <view class="sheet-head">
+        <view class="sheet-code">{{detail.code}}</view>
+        <view class="sheet-pos">{{detail.row}} 排 · {{detail.col}} 列</view>
+      </view>
+
+      <view class="info-row">
+        <text class="k">电脑状态</text>
+        <text class="v {{detail.pcStatus === 'ok' ? 'ok' : 'bad'}}">
+          {{detail.pcStatus === 'ok' ? '完好可用' : '故障待修'}}
+        </text>
+      </view>
+      <view class="info-row">
+        <text class="k">座位状态</text>
+        <text class="v">{{detail.status === 'free' ? '空闲' : detail.status === 'broken' ? '故障停用' : '使用中'}}</text>
+      </view>
+      <view class="info-row" wx:if="{{detail.occupant}}">
+        <text class="k">当前使用者</text>
+        <text class="v">{{detail.occupant.name}}</text>
+      </view>
+      <view class="info-row" wx:if="{{detail.occupant}}">
+        <text class="k">选座时间</text>
+        <text class="v">{{detail.occupant.time}}</text>
+      </view>
+
+      <button class="sheet-btn danger" wx:if="{{detail.occupant}}" bindtap="forceFromDetail">帮 TA 退座</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.status === 'free'}}" bindtap="closeSheet">该座位空闲</button>
+      <button class="sheet-btn ghost" wx:if="{{detail.status === 'broken'}}" bindtap="closeSheet">电脑故障，暂不可用</button>
+      <button class="sheet-btn text" bindtap="closeSheet">关闭</button>
+    </block>
+  </view>
+</view>
